@@ -1,0 +1,1 @@
+python cursor2md.py --list --db-path "%APPDATA%\Cursor\User\globalStorage\state.vscdb"
