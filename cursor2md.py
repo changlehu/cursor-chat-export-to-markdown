@@ -132,27 +132,25 @@ def export_sessions(db_path, output_dir):
         cursor.execute("SELECT key, value FROM cursorDiskKV")
         rows = cursor.fetchall()
         
-        chat_records = {}
+        chat_records = []
         for key, value in rows:
             if key.startswith("composerData:") and value.strip() != "[]":
                 try:
                     record = ChatRecord(key, value)
                     if record.has_valid_content():
-                        chat_records[key.split(":", 1)[1]] = record
+                        chat_records.append(record)
                 except json.JSONDecodeError:
                     print(f"JSON解析失败: {key}")
                     continue
         
-        for index, (hash_key, record) in enumerate(sorted(chat_records.items(), key=lambda x: x[1].created_at, reverse=True)):
+        # 按创建时间升序排序
+        chat_records.sort(key=lambda r: r.created_at)
+        
+        for index, record in enumerate(chat_records):
             md_content = generate_markdown(record)
             safe_filename = record.name
             safe_filename = safe_filename.replace("<", "_").replace(">", "_").replace(":", "_").replace("/", "_").replace("\\", "_").replace("|", "_").replace("?", "_").replace("*", "_")
-            output_file = Path(output_dir) / f"{safe_filename}.md"
-            
-            # 检查文件是否已存在，如果存在则添加序号
-            while output_file.exists():
-                output_file = Path(output_dir) / f"{safe_filename}_{index}.md"
-                index += 1
+            output_file = Path(output_dir) / f"{index + 1:03d}_{safe_filename}.md"  # 添加序号
             
             with open(output_file, "w", encoding="utf-8") as f:
                 f.write(md_content)
@@ -160,7 +158,7 @@ def export_sessions(db_path, output_dir):
             print(f"已导出: {output_file}")
 
 def main():
-    parser = argparse.ArgumentParser(description="Cursor 聊天记录导出工具，python版本")
+    parser = argparse.ArgumentParser(description="Cursor 聊天记录导出工具")
     parser.add_argument("-ls", "--list", action="store_true", help="列出所有会话")
     parser.add_argument("-db", "--db-path", help="数据库文件路径")
     parser.add_argument("-o", "--output", default="markdown_output", help="markdown 文件输出目录")
