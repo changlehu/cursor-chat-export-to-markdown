@@ -1,4 +1,4 @@
-# cursor2md_python
+# cursor-chat-export-to-markdown
 Export cursor chat and composer data to markdown. Python version.
 
 ## Thanks
