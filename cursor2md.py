@@ -160,7 +160,7 @@ def export_sessions(db_path, output_dir):
             print(f"已导出: {output_file}")
 
 def main():
-    parser = argparse.ArgumentParser(description="Cursor 聊天记录导出工具")
+    parser = argparse.ArgumentParser(description="Cursor 聊天记录导出工具，python版本")
     parser.add_argument("-ls", "--list", action="store_true", help="列出所有会话")
     parser.add_argument("-db", "--db-path", help="数据库文件路径")
     parser.add_argument("-o", "--output", default="markdown_output", help="markdown 文件输出目录")
