@@ -21,7 +21,7 @@ python cursor2md.py --output ".\markdown_output" --db-path "%APPDATA%\Cursor\Use
 
 You can run bat file directly: list_cursor_data.bat or export_cursor_data.bat
 
-## Other platform:
+## Other platforms:
 
 Please write your own script by different db path.
 
