@@ -110,8 +110,12 @@ def generate_markdown(record):
             md_content += f"{text}\n"
             if code_blocks:
                 for block in code_blocks:
+                    # 检查 'uri' 是否存在
+                    uri = block.get("uri", {}).get("path", "")
+                    if not uri:
+                        # 处理缺少 uri 的情况
+                        continue  # 或者设置一个默认值
                     language = block.get("languageId", "text")
-                    uri = block["uri"].get("path", "")
                     filename = urlparse(uri).path.split("/")[-1]
                     code_content = block.get("content", "")
                     md_content += f"\n```{language} [{filename}]({uri})\n"
