@@ -29,3 +29,7 @@ cursor数据库在不同系统中的位置如下：
 * Windows: %APPDATA%/Cursor/User/globalStorage/state.vscdb
 * macOS: ~/Library/Application Support/Cursor/User/globalStorage/state.vscdb
 * Linux: ~/.config/Cursor/User/workspaceStorage/state.vscdb
+
+## 新版支持
+
+0.49版本的对话数据存储方式有变动，脚本已修改，目前可以同时导出新旧两种版本的对话数据。
