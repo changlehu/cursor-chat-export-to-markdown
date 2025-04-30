@@ -7,8 +7,6 @@ Go version:
 
 https://github.com/M6ZeroG/cursor2md
 
-All code was made by kimi. I just uploaded cusor2md.go and told kimi to convert code into python version.  https://kimi.moonshot.cn
-
 ## Usage (in windows)
 
 List all conversations：
