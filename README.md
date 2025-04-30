@@ -28,3 +28,7 @@ Please write your own script by different db path.
 * Windows: %APPDATA%/Cursor/User/globalStorage/state.vscdb
 * macOS: ~/Library/Application Support/Cursor/User/globalStorage/state.vscdb
 * Linux: ~/.config/Cursor/User/workspaceStorage/state.vscdb
+
+## New version support:
+
+Support new version 0.49. It can export old and new chat data at the same time.
