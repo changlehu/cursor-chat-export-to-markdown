@@ -29,4 +29,4 @@ Please write your own script by different db path.
 
 ## New version support:
 
-Support new version 0.49. It can export old and new chat data at the same time.
+Support new version 1.7.54. Filename affix has been changed from 001_ to 202510210800_ (End Time).
