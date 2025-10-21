@@ -235,10 +235,11 @@ def export_sessions(db_path, output_dir):
                 sessions.append({"type": "old", "record": rec})
                 continue
 
-        # —— 新版：fullConversationHeadersOnly + bubbleId 聚合 —— 
+        # —— 新版：fullConversationHeadersOnly + bubbleId 聚合 ——
         # 先解包 _v + data
         if isinstance(comp, dict) and "_v" in comp and "data" in comp:
             comp = comp["data"]
+
         if comp.get("fullConversationHeadersOnly"):
             cid = comp.get("composerId")
             headers = comp.get("fullConversationHeadersOnly", [])
@@ -264,11 +265,21 @@ def export_sessions(db_path, output_dir):
                     "codeBlocks": bub.get("codeBlocks", [])
                 })
             if msgs:
+                # 获取文件列表 - 从 context.mentions.fileSelections 中获取
+                file_selections = comp.get("context", {}).get("mentions", {}).get("fileSelections", {})
+                files = []
+                for file_uri in file_selections.keys():
+                    # 转换 URI 格式
+                    path = file_uri.replace("file:///", "").replace("%3A", ":").replace("%2F", "/")
+                    files.append({"uri": file_uri, "path": path})
+
                 sessions.append({
                     "type": "new",
                     "name": comp.get("name", ""),
                     "start_time": comp.get("createdAt", 0),
-                    "messages": msgs
+                    "end_time": comp.get("lastUpdatedAt", comp.get("createdAt", 0)),  # 使用 lastUpdatedAt 作为结束时间
+                    "messages": msgs,
+                    "files": files
                 })
 
     # 4）按开始时间升序，但要处理无效时间戳
@@ -299,6 +310,18 @@ def export_sessions(db_path, output_dir):
                 lines = [f"# {title}", "", "## 会话信息", ""]
                 st = datetime.fromtimestamp(s["start_time"] / 1000)
                 lines.append(f"- 开始时间: {st}")
+
+                et = datetime.fromtimestamp(s["end_time"] / 1000)
+                lines.append(f"- 结束时间: {et}")
+
+                # 添加相关文件信息
+                if s.get("files"):
+                    lines.append("- 相关文件:")
+                    for file in s["files"]:
+                        path = file.get("path", "")
+                        if path:
+                            filename = path.split("\\")[-1] if "\\" in path else path.split("/")[-1]
+                            lines.append(f"- [{filename}]({path})")
                 lines.append("")
                 for m in s["messages"]:
                     if m["type"] == 1:
@@ -314,15 +337,36 @@ def export_sessions(db_path, output_dir):
                             fname = Path(path).name if path else ""
                             lines += [f"```{lang} [{fname}]({path})", cb.get("content", ""), "```", ""]
                 md = "\n".join(lines)
+            # 获取结束时间用于文件命名
+            if s["type"] == "old":
+                end_time = record.ended_at
+            else:
+                # 新版会话使用 end_time 字段
+                end_time = s["end_time"]
+
+            # 格式化时间文件名
+            if end_time > 0:
+                time_str = datetime.fromtimestamp(end_time / 1000).strftime("%Y%m%d%H%M")
+            else:
+                # 如果没有有效时间戳，使用创建时间
+                if s["type"] == "old":
+                    create_time = record.created_at
+                else:
+                    create_time = s["start_time"]
+                if create_time > 0:
+                    time_str = datetime.fromtimestamp(create_time / 1000).strftime("%Y%m%d%H%M")
+                else:
+                    time_str = "unknown"
+
             # 生成安全文件名时过滤掉更多特殊字符
             safe = title.replace("<", "_").replace(">", "_").replace(":", "_")\
                        .replace("/", "_").replace("\\", "_").replace("|", "_")\
                        .replace("?", "_").replace("*", "_").replace('"', "_")\
                        .replace("'", "_").replace("\n", "_").replace("\r", "_")
             # 限制文件名总长度
-            if len(safe) > 50:  # 改为更短的限制
-                safe = safe[:47] + "..."
-            fn = f"{idx+1:03d}_{safe}.md"
+            if len(safe) > 40:  # 减少限制，为时间前缀留空间
+                safe = safe[:37] + "..."
+            fn = f"{time_str}_{safe}.md"
             out = Path(output_dir) / fn
             with open(out, "w", encoding="utf-8") as f:
                 f.write(md)
